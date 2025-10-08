@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-import(join(__dirname, "..", "dist", "index.js"));
+const indexPath = join(__dirname, "..", "dist", "index.js");
+const indexUrl = pathToFileURL(indexPath).href;
+
+// Dynamic import must receive a URL string (file://...) on Windows. Add a small
+// error handler to surface helpful errors instead of the opaque ESM loader exception.
+import(indexUrl).catch((err) => {
+	console.error('Failed to load bundled entry at', indexUrl);
+	console.error(err);
+	process.exit(1);
+});
